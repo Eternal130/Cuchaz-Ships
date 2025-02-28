@@ -107,6 +107,24 @@ public class TileEntityInventoryAdapter extends ObfuscationAwareAdapter {
 					}
 				}
 			};
+		} else if (m_name.startsWith("com/dunk/tfc/Handlers") && methodName.equals("getClientGuiElement") && methodDesc.startsWith(String.format("(IL%s;L%s;III", PlayerClassName, WorldClassName))) {
+			return new MethodVisitor(api, cv.visitMethod(access, methodName, methodDesc, signature, exceptions)) {
+
+				@Override
+				public void visitCode() {
+					super.visitCode();
+					mv.visitVarInsn(Opcodes.ALOAD, 3);
+					mv.visitVarInsn(Opcodes.ALOAD, 2);
+					mv.visitMethodInsn(
+							Opcodes.INVOKESTATIC,
+							ShipIntermediary.Path,
+							"translateWorld",
+							String.format("(L%s;L%s;)L%s;", WorldClassName, PlayerClassName, WorldClassName),
+							false
+					);
+					mv.visitVarInsn(Opcodes.ASTORE, 3);
+				}
+			};
 		} else {
 			return super.visitMethod(access, methodName, methodDesc, signature, exceptions);
 		}

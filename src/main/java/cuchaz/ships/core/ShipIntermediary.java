@@ -46,6 +46,14 @@ public class ShipIntermediary {
 		// otherwise, just pass through the original world
 		return world;
 	}
+	public static World translateWorld(World world, EntityPlayer player) {
+		EntityShip ship = ShipLocator.getFromPlayerLook(player);
+		if (ship != null) {
+			return ship.getShipWorld();
+		}
+
+		return world;
+	}
 	
 	public static double getEntityDistanceSq(EntityPlayer player, double tileEntityX, double tileEntityY, double tileEntityZ, TileEntity tileEntity) {
 		return translateDistance(tileEntity.getWorldObj(), player, tileEntityX, tileEntityY, tileEntityZ);
