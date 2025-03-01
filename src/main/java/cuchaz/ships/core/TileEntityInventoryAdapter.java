@@ -15,24 +15,32 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class TileEntityInventoryAdapter extends ObfuscationAwareAdapter {
-	
+
 	private final String TileEntityClassName;
 	private final String ContainerClassName;
 	private final String PlayerClassName;
 	private final String InventoryPlayerClassName;
 	private final String WorldClassName;
-	
+	private final String[] OtherModGUIHandlers;
+
 	private String m_name;
-	
+
 	public TileEntityInventoryAdapter(int api, ClassVisitor cv, boolean isObfuscatedEnvironment) {
 		super(api, cv, isObfuscatedEnvironment);
-		
+
 		// cache the runtime class names
 		TileEntityClassName = "net/minecraft/tileentity/TileEntity";
 		ContainerClassName = "net/minecraft/inventory/Container";
 		PlayerClassName = "net/minecraft/entity/player/EntityPlayer";
 		InventoryPlayerClassName = "net/minecraft/entity/player/InventoryPlayer";
 		WorldClassName = "net/minecraft/world/World";
+		OtherModGUIHandlers = new String[] {
+			"com/dunk/tfc/Handlers",
+			"com/aleksey/merchants/Handlers",
+			"sladki/tfc/Gui",
+			"fair/tfcengineer/common/GUI",
+			"com/unforbidable/tfc/bids/Handlers/Client"
+		};
 	}
 	
 	@Override
@@ -107,7 +115,7 @@ public class TileEntityInventoryAdapter extends ObfuscationAwareAdapter {
 					}
 				}
 			};
-		} else if (m_name.startsWith("com/dunk/tfc/Handlers") && methodName.equals("getClientGuiElement") && methodDesc.startsWith(String.format("(IL%s;L%s;III", PlayerClassName, WorldClassName))) {
+		} else if (isOtherModGUIHandler(m_name) && methodName.equals("getClientGuiElement") && methodDesc.startsWith(String.format("(IL%s;L%s;III", PlayerClassName, WorldClassName))) {
 			return new MethodVisitor(api, cv.visitMethod(access, methodName, methodDesc, signature, exceptions)) {
 
 				@Override
@@ -128,5 +136,13 @@ public class TileEntityInventoryAdapter extends ObfuscationAwareAdapter {
 		} else {
 			return super.visitMethod(access, methodName, methodDesc, signature, exceptions);
 		}
+	}
+	private boolean isOtherModGUIHandler(String className) {
+		for (String otherModGUIHandler : OtherModGUIHandlers) {
+			if (className.startsWith(otherModGUIHandler)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
